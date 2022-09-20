@@ -1,17 +1,16 @@
 {
   "files": {
-    "main.css": "/hitofude/static/css/main.073c9b0a.css",
-    "main.js": "/hitofude/static/js/main.7d846055.js",
+    "main.css": "/hitofude/static/css/main.e6c13ad2.css",
+    "main.js": "/hitofude/static/js/main.50cc4f69.js",
     "static/js/787.ba51ea91.chunk.js": "/hitofude/static/js/787.ba51ea91.chunk.js",
     "service-worker.js": "/hitofude/service-worker.js",
-    "static/media/logo.svg": "/hitofude/static/media/logo.103b5fa18196d5665a7e12318285c916.svg",
     "index.html": "/hitofude/index.html",
-    "main.073c9b0a.css.map": "/hitofude/static/css/main.073c9b0a.css.map",
-    "main.7d846055.js.map": "/hitofude/static/js/main.7d846055.js.map",
+    "main.e6c13ad2.css.map": "/hitofude/static/css/main.e6c13ad2.css.map",
+    "main.50cc4f69.js.map": "/hitofude/static/js/main.50cc4f69.js.map",
     "787.ba51ea91.chunk.js.map": "/hitofude/static/js/787.ba51ea91.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.073c9b0a.css",
-    "static/js/main.7d846055.js"
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.50cc4f69.js"
   ]
 }
