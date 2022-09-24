@@ -1,6 +1,21 @@
 {
   "label.menu__save": "保存",
-  "label.menu__isAutoSave": "自動保存",
+  "label.menu__undo": "元に戻す",
+  "label.menu__redo": "やり直し",
+  "label.menu__find": "検索",
+  "label.menu__option": "設定",
+
+  "label.option__theme": "テーマ",
+  "label.option__languageMode": "言語モード",
+  "label.option__fontSize": "フォントサイズ",
+  "label.option__lineNumber": "行番号",
+  "label.option__minimap": "ドキュメントマップ",
+  "label.option__lineHighlight": "現在行のハイライト",
+  "label.option__bracketPairsHighlight": "対応する括弧のハイライト",
+  "label.option__validation": "構文エラーの表示",
+  "label.option__wordWrap": "テキストの折り返し",
+  "label.option__autoSave": "自動保存",
+  "label.option__autoSaveDelay": "自動保存の間隔(秒)",
 
   "message.notify__save--succeeded": "保存されました。",
 
