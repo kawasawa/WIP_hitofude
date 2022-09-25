@@ -1,13 +1,14 @@
 {
   "files": {
-    "main.css": "/hitofude/static/css/main.fa9541a9.css",
-    "main.js": "/hitofude/static/js/main.3edb1517.js",
+    "main.css": "/hitofude/static/css/main.442b39f1.css",
+    "main.js": "/hitofude/static/js/main.0fd13954.js",
     "static/js/27.d81f6bd4.chunk.js": "/hitofude/static/js/27.d81f6bd4.chunk.js",
+    "static/media/codicon.ttf": "/hitofude/static/media/codicon.b797181c93b3755f4fa1.ttf",
     "service-worker.js": "/hitofude/service-worker.js",
     "index.html": "/hitofude/index.html"
   },
   "entrypoints": [
-    "static/css/main.fa9541a9.css",
-    "static/js/main.3edb1517.js"
+    "static/css/main.442b39f1.css",
+    "static/js/main.0fd13954.js"
   ]
 }
