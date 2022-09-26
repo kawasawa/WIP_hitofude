@@ -7,15 +7,19 @@ import {
   Undo as UndoIcon,
 } from '@mui/icons-material';
 import { Box, Divider, Fab, LinearProgress, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { Turn as Hamburger } from 'hamburger-react';
 import MonacoEditorApi, { IDisposable, KeyCode, KeyMod } from 'monaco-editor/esm/vs/editor/editor.api';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import { v4 as uuidV4 } from 'uuid';
 
 import { AppContext, EditorContext } from '../contexts';
+import { db } from '../db';
 import { LanguageMode, SettingsKeys } from '../enums';
+import { handleError } from '../errors';
 import { convertToBoolean, convertToNumber, convertToString } from '../utils';
 import { OptionDialog } from './dialogs';
 
@@ -29,6 +33,30 @@ export const Editor = () => {
   const editorRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [editorMounted, setEditorMounted] = useState<boolean>(false);
   const [t] = useTranslation();
+
+  // プロパティ
+  const [languageMode, setLanguageMode] = useState<LanguageMode>(
+    (localStorage.getItem(SettingsKeys.languageMode) as LanguageMode) ?? 'plaintext'
+  );
+  const [fontSize, setFontSize] = useState<number>(convertToNumber(localStorage.getItem(SettingsKeys.fontSize), 14));
+  const [lineNumber, setLineNumber] = useState<boolean>(
+    convertToBoolean(localStorage.getItem(SettingsKeys.lineNumber))
+  );
+  const [minimap, setMinimap] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.minimap)));
+  const [lineHighlight, setLineHighlight] = useState<boolean>(
+    convertToBoolean(localStorage.getItem(SettingsKeys.lineHighlight))
+  );
+  const [bracketPairsHighlight, setBracketPairsHighlight] = useState<boolean>(
+    convertToBoolean(localStorage.getItem(SettingsKeys.bracketPairsHighlight))
+  );
+  const [validation, setValidation] = useState<boolean>(
+    convertToBoolean(localStorage.getItem(SettingsKeys.validation))
+  );
+  const [wordWrap, setWordWrap] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.wordWrap)));
+  const [autoSave, setAutoSave] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.autoSave)));
+  const [autoSaveDelay, setAutoSaveDelay] = useState<number>(
+    convertToNumber(localStorage.getItem(SettingsKeys.autoSaveDelay), 10)
+  );
 
   // ステート管理
   const [isDirty, setIsDirty] = useState<boolean>(false);
@@ -62,25 +90,47 @@ export const Editor = () => {
   }, [editorMounted, t, openOption]);
   useHotkeys('ctrl+,', openOption);
 
+  const documents = useLiveQuery(() => db.documents.toArray(), []);
+
   // 保存
-  const save = useCallback(() => {
+  const save = useCallback(async () => {
     if (!editorRef.current) return;
-    localStorage.setItem(SettingsKeys.text, editorRef.current.getValue());
-    setIsDirty(false);
-    toast.info(t('message.notify__save--succeeded'));
-  }, [t]);
+    try {
+      const doc = (documents && documents[0]) ?? null;
+      if (doc)
+        await db.documents.update(doc.id, {
+          title: 'noname',
+          text: editorRef.current.getValue(),
+          languageMode: languageMode,
+        });
+      else
+        await db.documents.add({
+          id: uuidV4(),
+          title: 'noname',
+          text: editorRef.current.getValue(),
+          languageMode: languageMode,
+        });
+      setIsDirty(false);
+      toast.info(t('message.notify__save--succeeded'));
+    } catch (error) {
+      handleError(error);
+    }
+  }, [t, documents, languageMode]);
   useEffect(() => {
     if (!editorMounted || !editorRef.current) return;
     compositeDisposable.save?.dispose();
-    const disposable = (editorRef.current as MonacoEditorApi.editor.IStandaloneCodeEditor).addAction({
+    const editor = editorRef.current as MonacoEditorApi.editor.IStandaloneCodeEditor;
+    const disposable = editor.addAction({
       id: 'save',
       label: t('label.menu__save'),
       keybindings: [KeyMod.WinCtrl | KeyCode.KeyS],
-      run: save,
+      run: async () => await save(),
     });
     compositeDisposable.save = disposable;
   }, [editorMounted, t, save]);
-  useHotkeys('ctrl+s', save);
+  useHotkeys('ctrl+s', () => {
+    save();
+  });
 
   // 元に戻す
   const undo = useCallback(() => {
@@ -105,30 +155,6 @@ export const Editor = () => {
     editor.focus();
     editor.getAction('actions.find').run();
   }, []);
-
-  // プロパティ
-  const [languageMode, setLanguageMode] = useState<LanguageMode>(
-    (localStorage.getItem(SettingsKeys.languageMode) as LanguageMode) ?? 'plaintext'
-  );
-  const [fontSize, setFontSize] = useState<number>(convertToNumber(localStorage.getItem(SettingsKeys.fontSize), 14));
-  const [lineNumber, setLineNumber] = useState<boolean>(
-    convertToBoolean(localStorage.getItem(SettingsKeys.lineNumber))
-  );
-  const [minimap, setMinimap] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.minimap)));
-  const [lineHighlight, setLineHighlight] = useState<boolean>(
-    convertToBoolean(localStorage.getItem(SettingsKeys.lineHighlight))
-  );
-  const [bracketPairsHighlight, setBracketPairsHighlight] = useState<boolean>(
-    convertToBoolean(localStorage.getItem(SettingsKeys.bracketPairsHighlight))
-  );
-  const [validation, setValidation] = useState<boolean>(
-    convertToBoolean(localStorage.getItem(SettingsKeys.validation))
-  );
-  const [wordWrap, setWordWrap] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.wordWrap)));
-  const [autoSave, setAutoSave] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.autoSave)));
-  const [autoSaveDelay, setAutoSaveDelay] = useState<number>(
-    convertToNumber(localStorage.getItem(SettingsKeys.autoSaveDelay), 10)
-  );
 
   // プロパティ永続化
   useEffect(() => {
@@ -163,12 +189,16 @@ export const Editor = () => {
   }, [autoSaveDelay]);
 
   // イベントハンドリング
-  const onEditorMount = useCallback((editor: MonacoEditorApi.editor.IStandaloneCodeEditor) => {
-    editorRef.current = editor;
-    editorRef.current.setValue(localStorage.getItem(SettingsKeys.text));
-    editor.focus();
-    setEditorMounted(true);
-  }, []);
+  const onEditorMount = useCallback(
+    (editor: MonacoEditorApi.editor.IStandaloneCodeEditor) => {
+      const doc = (documents && documents[0]) ?? null;
+      editorRef.current = editor;
+      editorRef.current.setValue(doc?.text ?? null);
+      editor.focus();
+      setEditorMounted(true);
+    },
+    [documents]
+  );
   const onEditorChange = useCallback(() => {
     // 最後の編集時点から計測して指定の時間後に保存する
     setIsDirty(true);
@@ -177,6 +207,8 @@ export const Editor = () => {
       setAutoSaveTimer(setTimeout(save, autoSaveDelay * 1000));
     }
   }, [autoSave, autoSaveDelay, autoSaveTimer, save]);
+
+  if (!documents) return null;
 
   return (
     <>
