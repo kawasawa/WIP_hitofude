@@ -1,15 +1,15 @@
 import 'react-toastify/dist/ReactToastify.css';
 
-import { createTheme, PaletteMode, ThemeProvider, useMediaQuery } from '@mui/material';
+import { createTheme, CssBaseline, PaletteMode, ThemeProvider, useMediaQuery } from '@mui/material';
 import i18n from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
 import { initReactI18next } from 'react-i18next';
 import { ToastContainer } from 'react-toastify';
 
-import { Editor } from './components';
 import { AppContext } from './contexts';
 import { SettingsKeys, Theme } from './enums';
 import jaJson from './locales/ja.json';
+import { Top } from './Pages/Top';
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -40,7 +40,6 @@ const App = () => {
   );
 
   useEffect(() => {
-    localStorage.setItem(SettingsKeys.theme, theme);
     switch (theme) {
       case Theme.light:
         setPaletteMode('light');
@@ -57,8 +56,9 @@ const App = () => {
 
   return (
     <ThemeProvider theme={appTheme}>
+      <CssBaseline />
       <AppContext.Provider value={{ paletteMode, theme, setTheme }}>
-        <Editor />
+        <Top />
       </AppContext.Provider>
       <ToastContainer
         draggable={false}

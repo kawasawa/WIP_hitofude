@@ -5,8 +5,9 @@ import { LanguageMode } from './enums';
 
 const DB_VERSION = 1;
 
-type Documents = {
+export type Documents = {
   id: string;
+  order: number;
   title: string;
   text: string;
   languageMode: LanguageMode;

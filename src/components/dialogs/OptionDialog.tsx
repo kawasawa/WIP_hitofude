@@ -35,7 +35,8 @@ import { NumericFormat } from 'react-number-format';
 import { NumberFormatValues } from 'react-number-format/types/types';
 
 import { AppContext, EditorContext } from '../../contexts';
-import { LanguageMode, Theme } from '../../enums';
+import { LanguageMode, SettingsKeys, Theme } from '../../enums';
+import { convertToString } from '../../utils';
 
 export type OptionDialogProps = {
   open: boolean;
@@ -57,11 +58,13 @@ export const OptionDialog = (props: OptionDialogProps) => {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const handleClose = useCallback(() => props.closeAction && props.closeAction(), [props]);
-
-  const onChangeThemeMode = (event: React.MouseEvent<HTMLElement>, newValue: string) => {
-    appContext?.setTheme(newValue);
-  };
+  const onChangeThemeMode = useCallback(
+    (event: React.MouseEvent<HTMLElement>, newValue: string) => {
+      localStorage.setItem(SettingsKeys.theme, newValue);
+      appContext?.setTheme(newValue);
+    },
+    [appContext]
+  );
   const isAllowFontSize = useCallback((values: NumberFormatValues) => {
     if (!values.floatValue) return false;
     if (values.floatValue < 1 || 99 < values.floatValue) return false;
@@ -69,40 +72,67 @@ export const OptionDialog = (props: OptionDialogProps) => {
   }, []);
   const onChangeFontSize = useCallback(
     (values: NumberFormatValues) => {
-      if (values.floatValue) editorContext?.setFontSize(values.floatValue);
+      if (values.floatValue) {
+        localStorage.setItem(SettingsKeys.fontSize, values.floatValue.toString());
+        editorContext?.setFontSize(values.floatValue);
+      }
     },
     [editorContext]
   );
   const onChangeLineNumber = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => editorContext?.setLineNumber(event.target.checked),
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      localStorage.setItem(SettingsKeys.lineNumber, convertToString(event.target.checked));
+      editorContext?.setLineNumber(event.target.checked);
+    },
     [editorContext]
   );
   const onChangeMinimap = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => editorContext?.setMinimap(event.target.checked),
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      localStorage.setItem(SettingsKeys.minimap, convertToString(event.target.checked));
+      editorContext?.setMinimap(event.target.checked);
+    },
     [editorContext]
   );
   const onChangeLineHighlight = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => editorContext?.setLineHighlight(event.target.checked),
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      localStorage.setItem(SettingsKeys.lineHighlight, convertToString(event.target.checked));
+      editorContext?.setLineHighlight(event.target.checked);
+    },
     [editorContext]
   );
   const onChangeBracketPairsHighlight = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => editorContext?.setBracketPairsHighlight(event.target.checked),
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      localStorage.setItem(SettingsKeys.bracketPairsHighlight, convertToString(event.target.checked));
+      editorContext?.setBracketPairsHighlight(event.target.checked);
+    },
     [editorContext]
   );
   const onChangeValidation = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => editorContext?.setValidation(event.target.checked),
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      localStorage.setItem(SettingsKeys.validation, convertToString(event.target.checked));
+      editorContext?.setValidation(event.target.checked);
+    },
     [editorContext]
   );
   const onChangeWordWrap = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => editorContext?.setWordWrap(event.target.checked),
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      localStorage.setItem(SettingsKeys.wordWrap, convertToString(event.target.checked));
+      editorContext?.setWordWrap(event.target.checked);
+    },
     [editorContext]
   );
   const onChangeAutoSave = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => editorContext?.setAutoSave(event.target.checked),
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      localStorage.setItem(SettingsKeys.autoSave, convertToString(event.target.checked));
+      editorContext?.setAutoSave(event.target.checked);
+    },
     [editorContext]
   );
   const onChangeLanguageMode = useCallback(
-    (event: SelectChangeEvent) => editorContext?.setLanguageMode(event.target.value as string),
+    (event: SelectChangeEvent) => {
+      localStorage.setItem(SettingsKeys.languageMode, event.target.value as string);
+      editorContext?.setLanguageMode(event.target.value as string);
+    },
     [editorContext]
   );
   const isAllowAutoSaveDelay = useCallback((values: NumberFormatValues) => {
@@ -112,10 +142,15 @@ export const OptionDialog = (props: OptionDialogProps) => {
   }, []);
   const onChangeAutoSaveDelay = useCallback(
     (values: NumberFormatValues) => {
-      if (values.floatValue) editorContext?.setAutoSaveDelay(values.floatValue);
+      if (values.floatValue) {
+        localStorage.setItem(SettingsKeys.autoSaveDelay, values.floatValue.toString());
+        editorContext?.setAutoSaveDelay(values.floatValue);
+      }
     },
     [editorContext]
   );
+
+  const handleClose = useCallback(() => props.closeAction && props.closeAction(), [props]);
 
   useEffect(() => {
     if (props.open) {
@@ -210,7 +245,7 @@ export const OptionDialog = (props: OptionDialogProps) => {
             <FormControlLabel
               label={t('label.option__validation')}
               control={<Switch checked={editorContext?.validation} onChange={onChangeValidation} />}
-            />{' '}
+            />
             <FormControlLabel
               label={t('label.option__wordWrap')}
               control={<Switch checked={editorContext?.wordWrap} onChange={onChangeWordWrap} />}
