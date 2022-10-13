@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/hitofude/static/css/main.442b39f1.css",
-    "main.js": "/hitofude/static/js/main.0882ac9b.js",
-    "static/js/27.d81f6bd4.chunk.js": "/hitofude/static/js/27.d81f6bd4.chunk.js",
+    "main.js": "/hitofude/static/js/main.4116ff5c.js",
+    "static/js/27.dc35b197.chunk.js": "/hitofude/static/js/27.dc35b197.chunk.js",
     "static/media/codicon.ttf": "/hitofude/static/media/codicon.b797181c93b3755f4fa1.ttf",
     "service-worker.js": "/hitofude/service-worker.js",
     "index.html": "/hitofude/index.html"
   },
   "entrypoints": [
     "static/css/main.442b39f1.css",
-    "static/js/main.0882ac9b.js"
+    "static/js/main.4116ff5c.js"
   ]
 }
