@@ -12,6 +12,8 @@ import { handleError } from '../errors';
 export type EditorProps = {
   document: Documents;
   openOption: { (): void };
+  openNewfile: { (): void };
+  openEditFile: { (): void };
 };
 
 const compositeDisposable: { [key: string]: IDisposable } = {};
@@ -88,6 +90,32 @@ export const Editor = React.forwardRef(function _(props: EditorProps, ref: React
     compositeDisposable.open = disposable;
   }, [props, editorMounted, t]);
 
+  // ファイルの新規作成
+  useEffect(() => {
+    if (!editorMounted) return;
+    compositeDisposable.newFile?.dispose();
+    const disposable = (monacoRef.current as MonacoEditorApi.editor.IStandaloneCodeEditor).addAction({
+      id: 'newFile',
+      label: t('label.menu__newFile'),
+      keybindings: [KeyMod.WinCtrl | KeyCode.KeyN],
+      run: props.openNewfile,
+    });
+    compositeDisposable.newFile = disposable;
+  }, [props, editorMounted, t]);
+
+  // ファイルの設定変更
+  useEffect(() => {
+    if (!editorMounted) return;
+    compositeDisposable.editFile?.dispose();
+    const disposable = (monacoRef.current as MonacoEditorApi.editor.IStandaloneCodeEditor).addAction({
+      id: 'editFile',
+      label: t('label.menu__editFile'),
+      keybindings: [KeyCode.F2],
+      run: props.openEditFile,
+    });
+    compositeDisposable.editFile = disposable;
+  }, [props, editorMounted, t]);
+
   // イベントハンドリング
   const onEditorMount = useCallback(
     (editor: MonacoEditorApi.editor.IStandaloneCodeEditor) => {
@@ -121,7 +149,7 @@ export const Editor = React.forwardRef(function _(props: EditorProps, ref: React
   return (
     <MonacoEditor
       theme={appContext?.paletteMode === 'dark' ? 'vs-dark' : 'light'}
-      language={editorContext.languageMode}
+      language={props.document.languageMode}
       options={{
         // エディター
         fontSize: editorContext.fontSize, // フォントサイズ
@@ -133,7 +161,7 @@ export const Editor = React.forwardRef(function _(props: EditorProps, ref: React
         lineDecorationsWidth: editorContext.lineNumber ? 10 : 5, // 行番号の右隣の余白
         lineNumbersMinChars: 2, // 行番号の最小幅
         glyphMargin: false, // デバッグシンボル用の余白
-        folding: editorContext.languageMode !== 'plaintext', // コードの折りたたみ
+        folding: props.document.languageMode !== 'plaintext', // コードの折りたたみ
         showFoldingControls: 'always', // 折りたたみシンボルの表示
 
         // スクロールバー、ドキュメントマップ

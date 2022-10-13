@@ -11,8 +11,6 @@ export type AppContext = {
 export const AppContext = createContext<AppContext | undefined>(undefined);
 
 export type EditorContext = {
-  languageMode: LanguageMode;
-  setLanguageMode: React.Dispatch<React.SetStateAction<LanguageMode>>;
   fontSize: number;
   setFontSize: React.Dispatch<React.SetStateAction<number>>;
   lineNumber: boolean;

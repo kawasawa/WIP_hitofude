@@ -1,4 +1,7 @@
 {
+  "label.menu__newFile": "ファイルの新規作成",
+  "label.menu__editFile": "ファイルの設定変更",
+  "label.menu__removeFile": "ファイルの削除",
   "label.menu__save": "保存",
   "label.menu__undo": "元に戻す",
   "label.menu__redo": "やり直し",
@@ -6,8 +9,6 @@
   "label.menu__option": "設定",
 
   "label.option__theme": "テーマ",
-  "label.option__languageMode": "言語モード",
-  "label.option__fontSize": "フォントサイズ",
   "label.option__lineNumber": "行番号",
   "label.option__minimap": "ドキュメントマップ",
   "label.option__lineHighlight": "現在行のハイライト",
@@ -15,7 +16,18 @@
   "label.option__validation": "構文エラーの表示",
   "label.option__wordWrap": "テキストの折り返し",
   "label.option__autoSave": "自動保存",
+  "label.option__fontSize": "フォントサイズ",
   "label.option__autoSaveDelay": "自動保存の間隔(秒)",
+
+  "label.fileConfigDialog__fileName": "ファイル名",
+  "label.fileConfigDialog__languageMode": "言語モード",
+
+  "label.ok": "OK",
+  "label.cancel": "キャンセル",
+
+  "text.fileConfigDialog__newFile--message": "新しいファイルを作成します。",
+  "text.fileConfigDialog__editFile--message": "ファイルの設定を変更します。",
+  "text.confirmDialog__removeFile--message": "ファイルを削除します。よろしいですか？",
 
   "message.notify__save--succeeded": "保存されました。",
 

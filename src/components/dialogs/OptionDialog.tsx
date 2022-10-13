@@ -13,10 +13,6 @@ import {
   FormControl,
   FormControlLabel,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
   Slide,
   SlideProps,
   Stack,
@@ -35,7 +31,7 @@ import { NumericFormat } from 'react-number-format';
 import { NumberFormatValues } from 'react-number-format/types/types';
 
 import { AppContext, EditorContext } from '../../contexts';
-import { LanguageMode, SettingsKeys, Theme } from '../../enums';
+import { SettingsKeys, Theme } from '../../enums';
 import { convertToString } from '../../utils';
 
 export type OptionDialogProps = {
@@ -128,13 +124,6 @@ export const OptionDialog = (props: OptionDialogProps) => {
     },
     [editorContext]
   );
-  const onChangeLanguageMode = useCallback(
-    (event: SelectChangeEvent) => {
-      localStorage.setItem(SettingsKeys.languageMode, event.target.value as string);
-      editorContext?.setLanguageMode(event.target.value as string);
-    },
-    [editorContext]
-  );
   const isAllowAutoSaveDelay = useCallback((values: NumberFormatValues) => {
     if (!values.floatValue) return false;
     if (values.floatValue < 1 || 999 < values.floatValue) return false;
@@ -200,60 +189,35 @@ export const OptionDialog = (props: OptionDialogProps) => {
               ))}
             </ToggleButtonGroup>
           </FormControl>
+          <FormControlLabel
+            label={t('label.option__lineNumber')}
+            control={<Switch checked={editorContext?.lineNumber} onChange={onChangeLineNumber} />}
+          />
+          <FormControlLabel
+            label={t('label.option__minimap')}
+            control={<Switch checked={editorContext?.minimap} onChange={onChangeMinimap} />}
+          />
+          <FormControlLabel
+            label={t('label.option__lineHighlight')}
+            control={<Switch checked={editorContext?.lineHighlight} onChange={onChangeLineHighlight} />}
+          />
+          <FormControlLabel
+            label={t('label.option__bracketPairsHighlight')}
+            control={<Switch checked={editorContext?.bracketPairsHighlight} onChange={onChangeBracketPairsHighlight} />}
+          />
+          <FormControlLabel
+            label={t('label.option__validation')}
+            control={<Switch checked={editorContext?.validation} onChange={onChangeValidation} />}
+          />
+          <FormControlLabel
+            label={t('label.option__wordWrap')}
+            control={<Switch checked={editorContext?.wordWrap} onChange={onChangeWordWrap} />}
+          />
+          <FormControlLabel
+            label={t('label.option__autoSave')}
+            control={<Switch checked={editorContext?.autoSave} onChange={onChangeAutoSave} />}
+          />
           <FormControl sx={{ my: 1 }}>
-            <InputLabel>{t('label.option__languageMode')}</InputLabel>
-            <Select
-              label={t('label.option__languageMode')}
-              value={editorContext?.languageMode}
-              onChange={onChangeLanguageMode}
-            >
-              {Object.entries(LanguageMode).map(([lang, name]) => (
-                <MenuItem key={`option__editorLanguage--${lang}`} value={lang}>
-                  {name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl sx={{ my: 1 }}>
-            <NumericFormat
-              label={t('label.option__fontSize')}
-              value={editorContext?.fontSize}
-              customInput={TextField}
-              isAllowed={isAllowFontSize}
-              onValueChange={onChangeFontSize}
-            />
-          </FormControl>
-          <Stack sx={{ border: 1, borderRadius: 1, borderColor: 'grey.600', p: 2, mt: 2 }}>
-            <FormControlLabel
-              label={t('label.option__lineNumber')}
-              control={<Switch checked={editorContext?.lineNumber} onChange={onChangeLineNumber} />}
-            />
-            <FormControlLabel
-              label={t('label.option__minimap')}
-              control={<Switch checked={editorContext?.minimap} onChange={onChangeMinimap} />}
-            />
-            <FormControlLabel
-              label={t('label.option__lineHighlight')}
-              control={<Switch checked={editorContext?.lineHighlight} onChange={onChangeLineHighlight} />}
-            />
-            <FormControlLabel
-              label={t('label.option__bracketPairsHighlight')}
-              control={
-                <Switch checked={editorContext?.bracketPairsHighlight} onChange={onChangeBracketPairsHighlight} />
-              }
-            />
-            <FormControlLabel
-              label={t('label.option__validation')}
-              control={<Switch checked={editorContext?.validation} onChange={onChangeValidation} />}
-            />
-            <FormControlLabel
-              label={t('label.option__wordWrap')}
-              control={<Switch checked={editorContext?.wordWrap} onChange={onChangeWordWrap} />}
-            />
-            <FormControlLabel
-              label={t('label.option__autoSave')}
-              control={<Switch checked={editorContext?.autoSave} onChange={onChangeAutoSave} />}
-            />
             <NumericFormat
               label={t('label.option__autoSaveDelay')}
               value={editorContext?.autoSaveDelay}
@@ -261,9 +225,18 @@ export const OptionDialog = (props: OptionDialogProps) => {
               variant="standard"
               isAllowed={isAllowAutoSaveDelay}
               onValueChange={onChangeAutoSaveDelay}
-              sx={{ mt: 0.5 }}
             />
-          </Stack>
+          </FormControl>
+          <FormControl sx={{ my: 1 }}>
+            <NumericFormat
+              label={t('label.option__fontSize')}
+              value={editorContext?.fontSize}
+              customInput={TextField}
+              variant="standard"
+              isAllowed={isAllowFontSize}
+              onValueChange={onChangeFontSize}
+            />
+          </FormControl>
         </Stack>
       </Container>
     </Dialog>

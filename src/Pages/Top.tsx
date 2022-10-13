@@ -1,5 +1,8 @@
 import { loader } from '@monaco-editor/react';
 import {
+  Delete as DeleteIcon,
+  DriveFileRenameOutline as DriveFileRenameOutlineIcon,
+  NoteAdd as NoteAddIcon,
   Redo as RedoIcon,
   Save as SaveIcon,
   Search as SearchIcon,
@@ -14,9 +17,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
+import { v4 as uuidV4 } from 'uuid';
 
 import { Editor } from '../components';
-import { OptionDialog } from '../components/dialogs';
+import { ConfirmDialog, FileConfigDialog, OptionDialog } from '../components/dialogs';
 import { EditorContext } from '../contexts';
 import { db, Documents } from '../db';
 import { LanguageMode, SettingsKeys } from '../enums';
@@ -30,6 +34,27 @@ export const Top = () => {
 
   const [t] = useTranslation();
   const editorRefs = useRef<{ [key: string]: any }>({});
+
+  // プロパティ
+  const [fontSize, setFontSize] = useState<number>(convertToNumber(localStorage.getItem(SettingsKeys.fontSize), 14));
+  const [lineNumber, setLineNumber] = useState<boolean>(
+    convertToBoolean(localStorage.getItem(SettingsKeys.lineNumber))
+  );
+  const [minimap, setMinimap] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.minimap)));
+  const [lineHighlight, setLineHighlight] = useState<boolean>(
+    convertToBoolean(localStorage.getItem(SettingsKeys.lineHighlight))
+  );
+  const [bracketPairsHighlight, setBracketPairsHighlight] = useState<boolean>(
+    convertToBoolean(localStorage.getItem(SettingsKeys.bracketPairsHighlight))
+  );
+  const [validation, setValidation] = useState<boolean>(
+    convertToBoolean(localStorage.getItem(SettingsKeys.validation))
+  );
+  const [wordWrap, setWordWrap] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.wordWrap)));
+  const [autoSave, setAutoSave] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.autoSave)));
+  const [autoSaveDelay, setAutoSaveDelay] = useState<number>(
+    convertToNumber(localStorage.getItem(SettingsKeys.autoSaveDelay), 10)
+  );
 
   // タブの選択状態
   const [tabValue, setTabValue] = React.useState('');
@@ -65,7 +90,14 @@ export const Top = () => {
   // ドラッグ処理
   const onDragEnd = useCallback(
     async (result: DropResult) => {
-      if (!documents || !result.destination) return;
+      if (!documents || !result.destination) {
+        return;
+      }
+      if (result.source.index === result.destination.index) {
+        setTabValue(documents[result.destination.index].id);
+        return;
+      }
+
       // ドキュメントの並び順を入れ替える
       const newDocuments = [...documents];
       const [removedDocument] = newDocuments.splice(result.source.index, 1);
@@ -101,40 +133,66 @@ export const Top = () => {
   const closeOption = useCallback(() => setOptionOpened(false), []);
   useHotkeys('ctrl+,', openOption);
 
+  // ファイルの新規作成
+  const [newFileOpened, setNewFileOpened] = React.useState(false);
+  const openNewFile = useCallback(() => {
+    closeHamburger();
+    setNewFileOpened(true);
+  }, [closeHamburger]);
+  const okNewFile = useCallback(
+    async (fileName: string, languageMode: LanguageMode) => {
+      setNewFileOpened(false);
+      await db.documents.add({
+        id: uuidV4(),
+        order: documents.length,
+        title: fileName,
+        languageMode: languageMode,
+        text: '',
+      });
+    },
+    [documents]
+  );
+  const cancelNewFile = useCallback(() => setNewFileOpened(false), []);
+  useHotkeys('ctrl+N', openNewFile);
+
+  // ファイルの設定変更
+  const [editFileOpened, setEditFileOpened] = React.useState(false);
+  const openEditFile = useCallback(() => {
+    closeHamburger();
+    setEditFileOpened(true);
+  }, [closeHamburger]);
+  const okEditFile = useCallback(
+    async (fileName: string, languageMode: LanguageMode) => {
+      setEditFileOpened(false);
+      const doc = documents.find((d) => d.id === tabValue)!;
+      await db.documents.update(doc.id, { title: fileName, languageMode: languageMode });
+    },
+    [documents, tabValue]
+  );
+  const cancelEditFile = useCallback(() => setEditFileOpened(false), []);
+  useHotkeys('F2', openEditFile);
+
+  // ファイルの削除
+  const [removeOpened, setRemoveOpened] = React.useState(false);
+  const openRemove = useCallback(() => {
+    closeHamburger();
+    setRemoveOpened(true);
+  }, [closeHamburger]);
+  const okRemove = useCallback(async () => {
+    setRemoveOpened(false);
+    const doc = documents.find((d) => d.id === tabValue)!;
+    await db.documents.delete(doc.id);
+  }, [documents, tabValue]);
+  const cancelRemove = useCallback(() => setRemoveOpened(false), []);
+
   // 保存
   useHotkeys('ctrl+s', () => editorRefs.current[tabValue].current.save());
-
-  // プロパティ
-  const [languageMode, setLanguageMode] = useState<LanguageMode>(
-    (localStorage.getItem(SettingsKeys.languageMode) as LanguageMode) ?? Object.keys(LanguageMode)[0]
-  );
-  const [fontSize, setFontSize] = useState<number>(convertToNumber(localStorage.getItem(SettingsKeys.fontSize), 14));
-  const [lineNumber, setLineNumber] = useState<boolean>(
-    convertToBoolean(localStorage.getItem(SettingsKeys.lineNumber))
-  );
-  const [minimap, setMinimap] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.minimap)));
-  const [lineHighlight, setLineHighlight] = useState<boolean>(
-    convertToBoolean(localStorage.getItem(SettingsKeys.lineHighlight))
-  );
-  const [bracketPairsHighlight, setBracketPairsHighlight] = useState<boolean>(
-    convertToBoolean(localStorage.getItem(SettingsKeys.bracketPairsHighlight))
-  );
-  const [validation, setValidation] = useState<boolean>(
-    convertToBoolean(localStorage.getItem(SettingsKeys.validation))
-  );
-  const [wordWrap, setWordWrap] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.wordWrap)));
-  const [autoSave, setAutoSave] = useState<boolean>(convertToBoolean(localStorage.getItem(SettingsKeys.autoSave)));
-  const [autoSaveDelay, setAutoSaveDelay] = useState<number>(
-    convertToNumber(localStorage.getItem(SettingsKeys.autoSaveDelay), 10)
-  );
 
   if (!documents) return null;
 
   return (
     <EditorContext.Provider
       value={{
-        languageMode,
-        setLanguageMode,
         fontSize,
         setFontSize,
         lineNumber,
@@ -156,6 +214,32 @@ export const Top = () => {
       }}
     >
       <OptionDialog open={optionOpened} closeAction={closeOption} />
+
+      <FileConfigDialog
+        open={newFileOpened}
+        title={t('label.menu__newFile')}
+        message={t('text.fileConfigDialog__newFile--message')}
+        affirmativeAction={okNewFile}
+        negativeAction={cancelNewFile}
+      />
+
+      <FileConfigDialog
+        open={editFileOpened}
+        title={t('label.menu__editFile')}
+        message={t('text.fileConfigDialog__editFile--message')}
+        defaultFileName={documents.find((d) => d.id === tabValue)?.title}
+        defaultLanguageMode={documents.find((d) => d.id === tabValue)?.languageMode}
+        affirmativeAction={okEditFile}
+        negativeAction={cancelEditFile}
+      />
+
+      <ConfirmDialog
+        open={removeOpened}
+        title={t('label.menu__removeFile')}
+        message={t('text.confirmDialog__removeFile--message')}
+        affirmativeAction={okRemove}
+        negativeAction={cancelRemove}
+      />
 
       <TabContext value={tabValue!}>
         <DragDropContext onDragEnd={onDragEnd}>
@@ -185,7 +269,7 @@ export const Top = () => {
                 >
                   {/* タブはオーダー順に並べる */}
                   {orderBy(documents, 'order').map((doc, i) => (
-                    <DraggableTab key={`editor__tab--${i}`} index={i} label={doc.title} value={doc.id} />
+                    <DraggableTab key={`top__tab--${i}`} index={i} label={doc.title} value={doc.id} />
                   ))}
                   {provided?.placeholder ?? null}
                 </TabList>
@@ -197,8 +281,14 @@ export const Top = () => {
         {documents.map((doc, i) => {
           editorRefs.current[doc.id] ??= React.createRef();
           return (
-            <TabPanel key={`editor__tabPanel--${i}`} value={doc.id} sx={{ p: 0 }}>
-              <Editor ref={editorRefs.current[doc.id]} document={doc} openOption={openOption} />
+            <TabPanel key={`top__tabPanel--${i}`} value={doc.id} sx={{ p: 0 }}>
+              <Editor
+                ref={editorRefs.current[doc.id]}
+                document={doc}
+                openOption={openOption}
+                openNewfile={openNewFile}
+                openEditFile={openEditFile}
+              />
             </TabPanel>
           );
         })}
@@ -225,6 +315,40 @@ export const Top = () => {
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
+        <MenuItem
+          onClick={() => {
+            openNewFile();
+            closeHamburger();
+          }}
+        >
+          <ListItemIcon>
+            <NoteAddIcon />
+          </ListItemIcon>
+          <ListItemText>{t('label.menu__newFile')}</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            openEditFile();
+            closeHamburger();
+          }}
+        >
+          <ListItemIcon>
+            <DriveFileRenameOutlineIcon />
+          </ListItemIcon>
+          <ListItemText>{t('label.menu__editFile')}</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            openRemove();
+            closeHamburger();
+          }}
+        >
+          <ListItemIcon>
+            <DeleteIcon />
+          </ListItemIcon>
+          <ListItemText>{t('label.menu__removeFile')}</ListItemText>
+        </MenuItem>
+        <Divider />
         <MenuItem
           onClick={async () => {
             await editorRefs.current[tabValue].current.save();
